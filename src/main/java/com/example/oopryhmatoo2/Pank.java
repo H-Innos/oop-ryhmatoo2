@@ -1,24 +1,24 @@
 package com.example.oopryhmatoo2;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Scanner;
 
 public class Pank {
     private List<Klient> kliendid;
     private List<Pangakonto> kontod;
     private List<Tehing> tehingud;
 
-    public Pank() throws IOException {
+    public Pank() {
         this.kliendid = new ArrayList<>();
         this.kontod = new ArrayList<>();
         this.tehingud = new ArrayList<>();
-        loeKontod("kontod.txt");
+        try {
+            loeKontod();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
 
     }
 
@@ -34,58 +34,79 @@ public class Pank {
         return tehingud;
     }
 
-    public void loeKontod(String failinimi) throws IOException {
-        File fail = new File(failinimi);
-        Scanner scanner = new Scanner(fail, StandardCharsets.UTF_8);
-        while (scanner.hasNextLine()){
-            String rida = scanner.nextLine();
-            String[] osad = rida.split("; ");
+    public void loeKontod() throws IOException {
+        // Kontode andmed
+        try (DataInputStream dis = new DataInputStream(new FileInputStream("kontod.dat"))) {
+            int arv = dis.readInt();
+            for (int i = 0; i < arv; i++) {
+                String nimi = dis.readUTF();
+                String riik = dis.readUTF();
+                int kontoNumber = dis.readInt();
+                double kontoJääk = dis.readDouble();
+                double väljaminekud = dis.readDouble();
+                double sissetulekud = dis.readDouble();
+                int tehinguteArv = dis.readInt();
 
-            if (osad.length == 7) {
-                Klient klient = new Klient(osad[0], osad[1]);
-
+                Klient klient = new Klient(nimi, riik);
                 if (!kliendid.contains(klient)) kliendid.add(klient);
+                kontod.add(new Pangakonto(klient, kontoNumber, kontoJääk, väljaminekud, sissetulekud, tehinguteArv));
+            }
+        }
 
-                kontod.add(new Pangakonto(klient, Integer.parseInt(osad[2]),
-                        Double.parseDouble(osad[3]), Double.parseDouble(osad[4]),
-                        Double.parseDouble(osad[5]), Integer.parseInt(osad[6])));
+        // Tehingute andmed
+        try (DataInputStream dis = new DataInputStream(new FileInputStream("tehingud.dat"))) {
+            int arv = dis.readInt();
+            for (int i = 0; i < arv; i++) {
+                int tehinguNumber = dis.readInt();
+                int saajaKonto = dis.readInt();
+                int saatjaKonto = dis.readInt();
+                double saadetudSumma = dis.readDouble();
 
-            } else if (osad.length == 4) {
                 Pangakonto saaja = null;
                 Pangakonto saatja = null;
 
                 for (Pangakonto konto : kontod) {
-                    if (konto.getKontoNumber() == Integer.parseInt(osad[1])){
+                    if (konto.getKontoNumber() == saajaKonto){
                         saaja = konto;
                     }
-                    if (konto.getKontoNumber() == Integer.parseInt(osad[2])){
+                    if (konto.getKontoNumber() == saatjaKonto){
                         saatja = konto;
                     }
                 }
+
                 if (saatja.getKlient().getRiik().equals(saaja.getKlient().getRiik())){
-                    tehingud.add(new SiseriiklikMakse(Integer.parseInt(osad[0]), saaja, saatja, Double.parseDouble(osad[3])));
+                    tehingud.add(new SiseriiklikMakse(tehinguNumber, saaja, saatja, saadetudSumma));
                 } else {
-                    tehingud.add(new Välismakse(Integer.parseInt(osad[0]), saaja, saatja, Double.parseDouble(osad[3])));
+                    tehingud.add(new Välismakse(tehinguNumber, saaja, saatja, saadetudSumma));
                 }
             }
         }
     }
 
-    public void salvestaKontod(String failinimi) throws IOException {
-        // kirjutab faili
-        FileWriter kirjutaja = new FileWriter(failinimi);
-        for (Pangakonto konto: kontod) {
-            kirjutaja.write(
-                    konto.getKlient().getNimi() +"; " + konto.getKlient().getRiik() + "; " + konto.getKontoNumber() + "; " +
-                            konto.getKontoJääk() + "; " + konto.getVäljaminekud() + "; " +
-                            konto.getSissetulekud() + "; " + konto.getTehinguteArv() + "\n");
+    public void salvestaKontod() throws IOException {
+        // Kirjutab faili binaarkoodina kontod
+        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("kontod.dat"))) {
+            dos.writeInt(kontod.size());
+            for (Pangakonto konto : kontod) {
+                dos.writeUTF(konto.getKlient().getNimi());
+                dos.writeUTF(konto.getKlient().getRiik());
+                dos.writeInt(konto.getKontoNumber());
+                dos.writeDouble(konto.getKontoJääk());
+                dos.writeDouble(konto.getVäljaminekud());
+                dos.writeDouble(konto.getSissetulekud());
+                dos.writeInt(konto.getTehinguteArv());
+            }
         }
-        for (Tehing tehing : tehingud) {
-            kirjutaja.write(
-                    tehing.getTehinguNumber() + "; " + tehing.getSaaja().getKontoNumber() + "; " +
-                            tehing.getSaatja().getKontoNumber() + "; " + tehing.getSaadetudSumma() + "\n");
+        // Tehingud
+        try (DataOutputStream dos = new DataOutputStream(new FileOutputStream("tehingud.dat"))) {
+            dos.writeInt(tehingud.size());
+            for (Tehing tehing : tehingud) {
+                dos.writeInt(tehing.getTehinguNumber());
+                dos.writeInt(tehing.getSaaja().getKontoNumber());
+                dos.writeInt(tehing.getSaatja().getKontoNumber());
+                dos.writeDouble(tehing.getSaadetudSumma());
+            }
         }
-        kirjutaja.close();
         System.out.println("Pank sulges!");
     }
 
@@ -108,7 +129,7 @@ public class Pank {
         return kasutajaKonto;
     }
 
-    public void teeTehing(Pangakonto saatja, int saaja, double summa) throws KontotEiEksisteeriErind, PolePiisavaltRahaErind {
+    public void teeTehing(Pangakonto saatja, int saaja, double summa) {
         for (Pangakonto konto : kontod) {
             // leiame kontonumbri
             if (konto.getKontoNumber() == saaja){
@@ -145,10 +166,11 @@ public class Pank {
     }
 
     public String näitaTehinguid() {
+        // todo näidata vaid enda konto tehinguid
         // tagastame sõnena kõik tehingud
         String tulemus = "Kõik tehingud: \n";
         for (Tehing tehing : tehingud) {
-            tulemus+= tehing + "\n";
+            tulemus += tehing + "\n";
         }
         return tulemus;
     }

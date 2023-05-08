@@ -1,5 +1,6 @@
 package com.example.oopryhmatoo2;
 
+import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -17,6 +18,8 @@ public class TegevusteAken extends Stage {
 
     private Pangakonto kasutajaKonto;
     private Pank pank;
+
+
 
     public TegevusteAken(Pank pank, Pangakonto pangakonto) {
         this.pank = pank;
@@ -71,9 +74,9 @@ public class TegevusteAken extends Stage {
             // küsime saaja kontonumbrit
             SaajaKüsimiseAken saajaKüsimine = new SaajaKüsimiseAken("Kellele soovid raha saata?");
             saajaKüsimine.setOnHidden(event -> {
+                saaja.set(saajaKüsimine.getSisend());
                 // kuvame uue akna siis, kui saaja on sisestatud
                 if (saaja.intValue() != 0) {
-                    saaja.set(saajaKüsimine.getSisend());
                     // küsime summat
                     SummaKüsimiseAken summaKüsimine = new SummaKüsimiseAken("Palju raha soovid saata?");
                     summaKüsimine.setOnHidden(event2 -> {
@@ -82,11 +85,10 @@ public class TegevusteAken extends Stage {
                         // !!
                         // siin võiks tegelikult neid veateateid näidata akende enda veateate kastides
                         // selleks peaks akende klasse veidi muutma, teha nt mingi PiiratudSummaKüsimiseAken vms
+                        // todo äkki saaks klassi konstruktorisse panna mingi lisa parameetri ja vastavalt sellele tegevused?
                         try {
                             pank.teeTehing(kasutajaKonto, saaja.intValue(), summa.doubleValue());
-                        } catch (KontotEiEksisteeriErind ex) {
-                            sõnum.setText(ex.getMessage());
-                        }catch (PolePiisavaltRahaErind ex) {
+                        } catch (KontotEiEksisteeriErind | PolePiisavaltRahaErind ex) {
                             sõnum.setText(ex.getMessage());
                         }
                     });
@@ -110,15 +112,12 @@ public class TegevusteAken extends Stage {
             sõnum.setText(pank.näitaTehinguid());
         });
 
-        // salvestame kontod ja sulgeme programmi
+        // salvestame kontod peaklassi stop-meetodis ja sulgeme programmi
         sulgeNupp.setOnAction(e -> {
-            try {
-                pank.salvestaKontod("kontod.txt");
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-            System.exit(0);
+            Platform.exit();
         });
+
+
 
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10, 10, 10, 10));

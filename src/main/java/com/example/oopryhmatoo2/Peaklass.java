@@ -5,13 +5,15 @@ import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class Peaklass extends Application {
     Pangakonto aktiivneKonto;
+    Pank pank = new Pank();
 
     @Override
     public void start(Stage peaLava) throws Exception {
 
-        Pank pank = new Pank();
         Pane juur = new Pane();
 
         // näitame mugavuse pärast kõiki kontosid konsoolis
@@ -42,6 +44,16 @@ public class Peaklass extends Application {
 
             });
         });
+    }
+
+    @Override
+    public void stop(){
+        // toimub nii peaakna sulgemisel kui ka sulgemisnupul
+        try {
+            pank.salvestaKontod();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     public static void main(String[] args) {

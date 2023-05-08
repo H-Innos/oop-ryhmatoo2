@@ -3,6 +3,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -25,28 +26,18 @@ public class SisseLogimiseAken extends Stage {
         // alati küsime nime
         juhised = new Label("Sisesta oma ees- ja perekonnanimi: ");
         tekstiriba = new TextField();
+        tekstiriba.requestFocus();
         kinnita = new Button("Enter");
         veateade = new Label("");
 
         vbox = new VBox();
         vbox.getChildren().addAll(juhised, tekstiriba, kinnita, veateade);
 
-
-        kinnita.setOnAction(event -> {
-            kliendiNimi = tekstiriba.getText();
-
-            kliendiNimi = töötleNimi(kliendiNimi); // teisendame nime õigesse formaati
-            tekstiriba.clear();
-            // kui nimega konto on olemas, tagastame selle
-            for (Pangakonto pangakonto : pank.getKontod()) {
-                if (pangakonto.getKlient().getNimi().equals(kliendiNimi)){
-                    this.pangakonto = pangakonto;
-                    this.hide();
-                }
-            }
-            // kui nimega kontot ei ole, loome uue
-            if (this.pangakonto == null) {
-                uueKontoLoomine();
+        // enter või nupuvajutus
+        kinnita.setOnAction(event -> otsiKlienti());
+        tekstiriba.setOnKeyPressed( event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                otsiKlienti();
             }
         });
 
@@ -57,29 +48,64 @@ public class SisseLogimiseAken extends Stage {
         this.show();
     }
 
+    private void otsiKlienti() {
+        kliendiNimi = tekstiriba.getText();
+
+        kliendiNimi = töötleNimi(kliendiNimi); // teisendame nime õigesse formaati
+        tekstiriba.clear();
+        // kui nimega konto on olemas, tagastame selle
+        for (Pangakonto pangakonto : pank.getKontod()) {
+            if (pangakonto.getKlient().getNimi().equals(kliendiNimi)){
+                this.pangakonto = pangakonto;
+                this.hide();
+            }
+        }
+        // kui nimega kontot ei ole, loome uue
+        if (this.pangakonto == null) {
+            uueKontoLoomine();
+        }
+    }
+
     public void uueKontoLoomine() {
         // küsime koduriiki
         juhised.setText("Sisesta oma koduriik: ");
+        tekstiriba.requestFocus();
 
-        kinnita.setOnAction(event -> {
-            kliendiRiik = tekstiriba.getText();
-            kliendiRiik = töötleNimi(kliendiRiik); // teisendame riigi nime sobivasse formaati
-            tekstiriba.clear();
-            // küsime algset rahasummat
-            juhised.setText("Palju raha soovid kontole panna?");
-            kinnita.setOnAction(e -> {
-                String sisestatudSumma = tekstiriba.getText();
-                // laseme sisestada ainult numbri
-                try {
-                    rahasumma = Double.parseDouble(sisestatudSumma);
-                    this.pangakonto = pank.avaKonto(kliendiNimi, kliendiRiik, rahasumma);
-                    this.hide();
-                } catch (NumberFormatException ex) {
-                    veateade.setText("Palun sisestage number");
-                    tekstiriba.clear();
-                }
-            });
+        kinnita.setOnAction(event -> loeRiik());
+        tekstiriba.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                loeRiik();
+            }
         });
+    }
+
+    private void loeRiik() {
+        kliendiRiik = tekstiriba.getText();
+        kliendiRiik = töötleNimi(kliendiRiik); // teisendame riigi nime sobivasse formaati
+        tekstiriba.clear();
+        // küsime algset rahasummat
+        juhised.setText("Palju raha soovid kontole panna?");
+        tekstiriba.requestFocus();
+
+        kinnita.setOnAction(e -> loeRaha());
+        tekstiriba.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER)
+                loeRaha();
+        });
+    }
+
+    private void loeRaha() {
+        String sisestatudSumma = tekstiriba.getText();
+        // laseme sisestada ainult numbri
+        try {
+            rahasumma = Double.parseDouble(sisestatudSumma);
+            this.pangakonto = pank.avaKonto(kliendiNimi, kliendiRiik, rahasumma);
+            this.hide();
+        } catch (NumberFormatException ex) {
+            veateade.setText("Palun sisestage number");
+            tekstiriba.clear();
+            tekstiriba.requestFocus();
+        }
     }
 
     public Pangakonto getPangakonto() {
