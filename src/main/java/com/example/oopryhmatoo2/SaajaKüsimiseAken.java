@@ -19,7 +19,6 @@ public class SaajaKüsimiseAken extends Stage {
         juhis.setText(sõnum);
         tekstiriba.requestFocus();
 
-
         // töötab nii "kinnita" nuppu, kui ka enterit vajutades
         kinnita.setOnAction(event -> {
             loeArv();
@@ -36,6 +35,7 @@ public class SaajaKüsimiseAken extends Stage {
         this.setResizable(true);
         this.show();
     }
+
     private void loeArv(){
         String sisse = tekstiriba.getText();
         try {

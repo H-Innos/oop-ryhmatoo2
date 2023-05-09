@@ -1,7 +1,7 @@
 package com.example.oopryhmatoo2;
 
 public class Välismakse extends Tehing {
-    private double teenustasu;
+    private final double teenustasu;
     public Välismakse(int tehinguNumber, Pangakonto saaja, Pangakonto saatja, double saadetudSumma) {
         super(tehinguNumber, saaja, saatja, saadetudSumma);
         this.teenustasu = 5;

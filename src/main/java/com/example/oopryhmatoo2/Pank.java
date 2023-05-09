@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Random;
 
 public class Pank {
-    private List<Klient> kliendid;
-    private List<Pangakonto> kontod;
-    private List<Tehing> tehingud;
+    private final List<Klient> kliendid;
+    private final List<Pangakonto> kontod;
+    private final List<Tehing> tehingud;
 
     public Pank() {
         this.kliendid = new ArrayList<>();
@@ -129,28 +129,29 @@ public class Pank {
         return kasutajaKonto;
     }
 
-    public void teeTehing(Pangakonto saatja, int saaja, double summa) {
+    public Pangakonto kasKontoEksisteerib(int kontoNumber) {
         for (Pangakonto konto : kontod) {
-            // leiame kontonumbri
-            if (konto.getKontoNumber() == saaja){
-                if (saatja.getKontoJääk() < summa) {
-                    throw new PolePiisavaltRahaErind("Kontol pole piisavalt raha.");
-                }
-                // loob vastava tehingu ja salvestab selle
-                Tehing tehing;
-                if (saatja.getKlient().getRiik().equals(konto.getKlient().getRiik())){
-                    tehing = new SiseriiklikMakse(tehingud.size(), konto, saatja, summa);
-                } else {
-                    tehing = new Välismakse(tehingud.size(), konto, saatja, summa);
-                }
-                tehing.teostaMakse();
-                tehingud.add(tehing);
-
-                System.out.println("Tehing edukalt sooritatud!");
-                return;
-            }
+            if (konto.getKontoNumber() == kontoNumber)
+                return konto;
         }
         throw new KontotEiEksisteeriErind("Sellise numbriga kontot ei eksisteeri.");
+    }
+
+    public void teeTehing(Pangakonto saatja, Pangakonto saaja, double summa) {
+        if (saatja.getKontoJääk() < summa) {
+            throw new PolePiisavaltRahaErind("Kontol pole piisavalt raha.");
+        }
+        // loob vastava tehingu ja salvestab selle
+        Tehing tehing;
+        if (saatja.getKlient().getRiik().equals(saaja.getKlient().getRiik())){
+            tehing = new SiseriiklikMakse(tehingud.size(), saaja, saatja, summa);
+        } else {
+            tehing = new Välismakse(tehingud.size(), saaja, saatja, summa);
+        }
+        tehing.teostaMakse();
+        tehingud.add(tehing);
+
+        //System.out.println("Tehing edukalt sooritatud!");
     }
 
     public void näitaKontod(){
@@ -165,12 +166,13 @@ public class Pank {
         System.out.println(konto.getKontoJääk());
     }
 
-    public String näitaTehinguid() {
-        // todo näidata vaid enda konto tehinguid
+    public String näitaTehinguid(Pangakonto konto) {
         // tagastame sõnena kõik tehingud
-        String tulemus = "Kõik tehingud: \n";
+        String tulemus = "Kõik tehingud sinu kontoga: \n";
+        int kontoNumber = konto.getKontoNumber();
         for (Tehing tehing : tehingud) {
-            tulemus += tehing + "\n";
+            if (tehing.saatja.getKontoNumber() == kontoNumber || tehing.saaja.getKontoNumber() == kontoNumber)
+                tulemus += tehing + "\n";
         }
         return tulemus;
     }

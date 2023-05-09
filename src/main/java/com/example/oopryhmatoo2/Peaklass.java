@@ -12,7 +12,7 @@ public class Peaklass extends Application {
     Pank pank = new Pank();
 
     @Override
-    public void start(Stage peaLava) throws Exception {
+    public void start(Stage peaLava) {
 
         Pane juur = new Pane();
 
@@ -39,9 +39,8 @@ public class Peaklass extends Application {
                 if (aktiivneKonto != null) {
                     peaLava.hide();
                     // avame tegevuste akna
-                    TegevusteAken tegevusteAken = new TegevusteAken(pank, aktiivneKonto);
+                    new TegevusteAken(pank, aktiivneKonto);
                 }
-
             });
         });
     }

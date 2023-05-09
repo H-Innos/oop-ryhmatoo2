@@ -2,7 +2,7 @@ package com.example.oopryhmatoo2;
 
 public class Klient {
     private final String nimi;
-    private String riik;
+    private final String riik;
 
     public Klient(String nimi, String riik) {
         this.nimi = nimi;

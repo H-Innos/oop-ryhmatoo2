@@ -9,14 +9,14 @@ import javafx.stage.Stage;
 
 public class SisseLogimiseAken extends Stage {
     // võib olla kõik need isendiväljad pole vajalikud, pole kindel
-    private Label juhised; // siia tulevad juhised, mida sisestada
-    private TextField tekstiriba; // siia sisestatakse teksti
-    private Button kinnita; // kinnitamise nupp
-    private Label veateade; // siia tulevad veateated
-    private VBox vbox;
+    private final Label juhised; // siia tulevad juhised, mida sisestada
+    private final TextField tekstiriba; // siia sisestatakse teksti
+    private final Button kinnita; // kinnitamise nupp
+    private final Label veateade; // siia tulevad veateated
+    private final VBox vbox;
 
     private Pangakonto pangakonto; // pangakonto, millesse sisse logitakse
-    private Pank pank;
+    private final Pank pank;
     private String kliendiNimi;
     private String kliendiRiik;
     double rahasumma;

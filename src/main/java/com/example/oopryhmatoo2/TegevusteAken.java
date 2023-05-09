@@ -8,18 +8,16 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
 public class TegevusteAken extends Stage {
 
-    private Pangakonto kasutajaKonto;
-    private Pank pank;
-
-
+    private final Pangakonto kasutajaKonto;
+    private final Pank pank;
+    Label sõnum = new Label("");    // siia tulevad väljastatavad sõnumid
 
     public TegevusteAken(Pank pank, Pangakonto pangakonto) {
         this.pank = pank;
@@ -27,7 +25,6 @@ public class TegevusteAken extends Stage {
 
 
         Label tegevusedLabel = new Label("Tegevused:");
-        Label sõnum = new Label("");    // siia tulevad väljastatavad sõnumid
         sõnum.setWrapText(true);
         sõnum.setMaxWidth(500);
         sõnum.setLineSpacing(10);
@@ -47,54 +44,21 @@ public class TegevusteAken extends Stage {
             SummaKüsimiseAken rahaLisamine = new SummaKüsimiseAken("Kui palju raha soovid lisada?");
             rahaLisamine.setOnHidden(event -> {
                 summa.set(rahaLisamine.getSisend());
-                pank.lisaRaha(kasutajaKonto, summa.get());
+                if (summa.getValue() > 0.0) {
+                    pank.lisaRaha(kasutajaKonto, summa.get());
+                    sõnum.setText("Raha lisatud!");
+                }
             });
         });
 
         väljastaNupp.setOnAction(e -> {
-            DoubleProperty summa = new SimpleDoubleProperty(0.0);
-            // küsime väljastatavat summat
-            SummaKüsimiseAken rahaVäljastamine = new SummaKüsimiseAken("Kui palju raha soovid välja võtta?");
-            // siin võiks pmst veateade ilmuda küsimise akna sees
-            rahaVäljastamine.setOnHidden(event -> {
-                summa.set(rahaVäljastamine.getSisend());
-                try {
-                    pank.väljastaRaha(kasutajaKonto, summa.get());
-                } catch (PolePiisavaltRahaErind ex) {
-                    sõnum.setText(ex.getMessage());
-                }
-            });
+            rahaVäljastamine("Kui palju raha soovid välja võtta?");
         });
 
         // saadame raha
         saadaNupp.setOnAction(e -> {
-            IntegerProperty saaja = new SimpleIntegerProperty(0);   // saaja kontonumber
-            DoubleProperty summa = new SimpleDoubleProperty(0.0);   // saadetav summa
-
             // küsime saaja kontonumbrit
-            SaajaKüsimiseAken saajaKüsimine = new SaajaKüsimiseAken("Kellele soovid raha saata?");
-            saajaKüsimine.setOnHidden(event -> {
-                saaja.set(saajaKüsimine.getSisend());
-                // kuvame uue akna siis, kui saaja on sisestatud
-                if (saaja.intValue() != 0) {
-                    // küsime summat
-                    SummaKüsimiseAken summaKüsimine = new SummaKüsimiseAken("Palju raha soovid saata?");
-                    summaKüsimine.setOnHidden(event2 -> {
-                        summa.set(summaKüsimine.getSisend());
-                        // kui tehingu tegemisel visatakse erind, väljastame selle sõnumi kastis
-                        // !!
-                        // siin võiks tegelikult neid veateateid näidata akende enda veateate kastides
-                        // selleks peaks akende klasse veidi muutma, teha nt mingi PiiratudSummaKüsimiseAken vms
-                        // todo äkki saaks klassi konstruktorisse panna mingi lisa parameetri ja vastavalt sellele tegevused?
-                        try {
-                            pank.teeTehing(kasutajaKonto, saaja.intValue(), summa.doubleValue());
-                        } catch (KontotEiEksisteeriErind | PolePiisavaltRahaErind ex) {
-                            sõnum.setText(ex.getMessage());
-                        }
-                    });
-                }
-
-            });
+            küsiSaajat("Kellele soovid raha saata?");
         });
 
         // väljastame kontojäägi
@@ -109,7 +73,7 @@ public class TegevusteAken extends Stage {
 
         // väljastame kõik tehingud
         tehingudNupp.setOnAction(e -> {
-            sõnum.setText(pank.näitaTehinguid());
+            sõnum.setText(pank.näitaTehinguid(kasutajaKonto));
         });
 
         // salvestame kontod peaklassi stop-meetodis ja sulgeme programmi
@@ -133,6 +97,9 @@ public class TegevusteAken extends Stage {
         grid.add(tehingudNupp, 0, 6);
         grid.add(sulgeNupp, 0, 7);
 
+        ColumnConstraints constraint = new ColumnConstraints(80);
+        grid.getColumnConstraints().add(constraint);
+
         HBox hBox = new HBox(10);
         hBox.getChildren().addAll(grid, sõnum);
 
@@ -142,5 +109,62 @@ public class TegevusteAken extends Stage {
         this.setTitle("Vali tegevus");
         this.setResizable(true);
         this.show();
+    }
+
+    private void rahaVäljastamine(String teade) {
+        DoubleProperty summa = new SimpleDoubleProperty(0.0);
+        // küsime väljastatavat summat
+        SummaKüsimiseAken rahaVäljastamine = new SummaKüsimiseAken(teade);
+        // siin võiks pmst veateade ilmuda küsimise akna sees
+        rahaVäljastamine.setOnHidden(event -> {
+            summa.set(rahaVäljastamine.getSisend());
+            try {
+                if (summa.getValue() > 0.0) {
+                    pank.väljastaRaha(kasutajaKonto, summa.get());
+                    sõnum.setText("Raha välja antud!");
+                }
+            } catch (PolePiisavaltRahaErind ex) {
+                rahaVäljastamine(ex.getMessage());
+            }
+        });
+    }
+
+    private void küsiSaajat(String teade) {
+        IntegerProperty saaja = new SimpleIntegerProperty(0);   // saaja kontonumber
+
+        SaajaKüsimiseAken saajaKüsimine = new SaajaKüsimiseAken(teade);
+        saajaKüsimine.setOnHidden(event -> {
+            saaja.set(saajaKüsimine.getSisend());
+            Pangakonto konto = null;
+            try {
+                konto = pank.kasKontoEksisteerib(saaja.getValue());
+            } catch (KontotEiEksisteeriErind ex) {
+                // nagu lõpmatu tsükkel, kuna avab uuesti sama akna teise sõnumiga
+                küsiSaajat(ex.getMessage());
+            }
+
+            // küsime summat siis, kui õige saaja on sisestatud
+            if (konto != null)
+                küsiSummat(konto, "Palju raha soovid saata isikule " + konto.getKlient().getNimi() + "?");
+        });
+    }
+
+    private void küsiSummat(Pangakonto konto, String teade) {
+        DoubleProperty summa = new SimpleDoubleProperty(0.0);   // saadetav summa
+
+        SummaKüsimiseAken summaKüsimine = new SummaKüsimiseAken(teade);
+
+        summaKüsimine.setOnHidden(event2 -> {
+            summa.set(summaKüsimine.getSisend());
+            try {
+                if (summa.getValue() > 0.0) {
+                    pank.teeTehing(kasutajaKonto, konto, summa.doubleValue());
+                    sõnum.setText("Tehing sooritatud!");
+                }
+            } catch (PolePiisavaltRahaErind ex) {
+                // lõpmatu tsükkel
+                küsiSummat(konto, ex.getMessage());
+            }
+        });
     }
 }

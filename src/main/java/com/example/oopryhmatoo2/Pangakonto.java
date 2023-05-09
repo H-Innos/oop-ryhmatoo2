@@ -60,14 +60,14 @@ public class Pangakonto {
         String tekst;
 
         if (väljaminekud > sissetulekud) {
-            tekst = ", kontol on väljaminekud suuremad " +
-                    (väljaminekud-sissetulekud) + " võrra.";
+            tekst = ", \nkontol on väljaminekud suuremad " + (väljaminekud-sissetulekud) + " võrra.";
+        } else if (väljaminekud < sissetulekud) {
+            tekst = ", \nkontol on sissetulekud suuremad " + (sissetulekud-väljaminekud) + " võrra.";
         } else {
-            tekst = ", kontol on sissetulekud suuremad " +
-                    (sissetulekud-väljaminekud) + " võrra.";
+            tekst = ", \nkonto sissetulekud ja väljaminekud on võrdsed.";
         }
         return "Konto väljaminekud: " + väljaminekud +
-                ", sissetulekud: " + sissetulekud + tekst;
+                ", \nsissetulekud: " + sissetulekud + tekst;
     }
 
     public void rahaJuurde(double summa) {
