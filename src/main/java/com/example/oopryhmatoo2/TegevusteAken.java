@@ -1,10 +1,6 @@
 package com.example.oopryhmatoo2;
 
 import javafx.application.Platform;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -17,7 +13,7 @@ public class TegevusteAken extends Stage {
 
     private final Pangakonto kasutajaKonto;
     private final Pank pank;
-    Label sõnum = new Label("");    // siia tulevad väljastatavad sõnumid
+    TextArea sõnum2 = new TextArea(""); // siia tulevad väljastatavad sõnumid
 
     public TegevusteAken(Pank pank, Pangakonto pangakonto) {
         this.pank = pank;
@@ -25,9 +21,7 @@ public class TegevusteAken extends Stage {
 
 
         Label tegevusedLabel = new Label("Tegevused:");
-        sõnum.setWrapText(true);
-        sõnum.setMaxWidth(500);
-        sõnum.setLineSpacing(10);
+        sõnum2.setWrapText(true);
 
         // tegevuste nupud
         Button lisaNupp = new Button("Lisa");
@@ -40,13 +34,12 @@ public class TegevusteAken extends Stage {
 
         // lisame raha
         lisaNupp.setOnAction(e -> {
-            DoubleProperty summa = new SimpleDoubleProperty(0.0);
             SummaKüsimiseAken rahaLisamine = new SummaKüsimiseAken("Kui palju raha soovid lisada?");
             rahaLisamine.setOnHidden(event -> {
-                summa.set(rahaLisamine.getSisend());
-                if (summa.getValue() > 0.0) {
-                    pank.lisaRaha(kasutajaKonto, summa.get());
-                    sõnum.setText("Raha lisatud!");
+                double summa = rahaLisamine.getSisend();
+                if (summa > 0.0) {
+                    pank.lisaRaha(kasutajaKonto, summa);
+                    sõnum2.setText("Raha lisatud!");
                 }
             });
         });
@@ -63,17 +56,17 @@ public class TegevusteAken extends Stage {
 
         // väljastame kontojäägi
         jääkNupp.setOnAction(e -> {
-            sõnum.setText("Kontojääk: " + kasutajaKonto.getKontoJääk());
+            sõnum2.setText("Kontojääk: " + kasutajaKonto.getKontoJääk());
         });
 
         // väljastame konto kokkuvõtte
         kokkuvõteNupp.setOnAction(e -> {
-            sõnum.setText(kasutajaKonto.bilanss());
+            sõnum2.setText(kasutajaKonto.bilanss());
         });
 
         // väljastame kõik tehingud
         tehingudNupp.setOnAction(e -> {
-            sõnum.setText(pank.näitaTehinguid(kasutajaKonto));
+            sõnum2.setText(pank.näitaTehinguid(kasutajaKonto));
         });
 
         // salvestame kontod peaklassi stop-meetodis ja sulgeme programmi
@@ -97,31 +90,38 @@ public class TegevusteAken extends Stage {
         grid.add(tehingudNupp, 0, 6);
         grid.add(sulgeNupp, 0, 7);
 
-        ColumnConstraints constraint = new ColumnConstraints(80);
-        grid.getColumnConstraints().add(constraint);
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setContent(sõnum2);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
         HBox hBox = new HBox(10);
-        hBox.getChildren().addAll(grid, sõnum);
+        hBox.getChildren().addAll(grid, scrollPane);
 
-
-        Scene scene = new Scene(hBox, 300, 300);
+        Scene scene = new Scene(hBox, 600, 300);
         this.setScene(scene);
         this.setTitle("Vali tegevus");
         this.setResizable(true);
         this.show();
+
+        // arvutab objektide asukohad õigeks
+        ColumnConstraints constraint = new ColumnConstraints(kokkuvõteNupp.getWidth());
+        grid.getColumnConstraints().add(constraint);
+
+        sõnum2.setMinHeight(scene.getHeight()-2);
+        sõnum2.setPrefWidth(scene.getWidth()-constraint.getPrefWidth());
     }
 
     private void rahaVäljastamine(String teade) {
-        DoubleProperty summa = new SimpleDoubleProperty(0.0);
         // küsime väljastatavat summat
         SummaKüsimiseAken rahaVäljastamine = new SummaKüsimiseAken(teade);
         // siin võiks pmst veateade ilmuda küsimise akna sees
         rahaVäljastamine.setOnHidden(event -> {
-            summa.set(rahaVäljastamine.getSisend());
+            double summa = rahaVäljastamine.getSisend();
             try {
-                if (summa.getValue() > 0.0) {
-                    pank.väljastaRaha(kasutajaKonto, summa.get());
-                    sõnum.setText("Raha välja antud!");
+                if (summa > 0.0) {
+                    pank.väljastaRaha(kasutajaKonto, summa);
+                    sõnum2.setText("Raha välja antud!");
                 }
             } catch (PolePiisavaltRahaErind ex) {
                 rahaVäljastamine(ex.getMessage());
@@ -130,14 +130,13 @@ public class TegevusteAken extends Stage {
     }
 
     private void küsiSaajat(String teade) {
-        IntegerProperty saaja = new SimpleIntegerProperty(0);   // saaja kontonumber
-
         SaajaKüsimiseAken saajaKüsimine = new SaajaKüsimiseAken(teade);
         saajaKüsimine.setOnHidden(event -> {
-            saaja.set(saajaKüsimine.getSisend());
+            int saaja = saajaKüsimine.getSisend();
             Pangakonto konto = null;
             try {
-                konto = pank.kasKontoEksisteerib(saaja.getValue());
+                if (saaja != 0)
+                    konto = pank.kasKontoEksisteerib(saaja);
             } catch (KontotEiEksisteeriErind ex) {
                 // nagu lõpmatu tsükkel, kuna avab uuesti sama akna teise sõnumiga
                 küsiSaajat(ex.getMessage());
@@ -150,16 +149,14 @@ public class TegevusteAken extends Stage {
     }
 
     private void küsiSummat(Pangakonto konto, String teade) {
-        DoubleProperty summa = new SimpleDoubleProperty(0.0);   // saadetav summa
-
         SummaKüsimiseAken summaKüsimine = new SummaKüsimiseAken(teade);
 
         summaKüsimine.setOnHidden(event2 -> {
-            summa.set(summaKüsimine.getSisend());
+            double summa = summaKüsimine.getSisend();
             try {
-                if (summa.getValue() > 0.0) {
-                    pank.teeTehing(kasutajaKonto, konto, summa.doubleValue());
-                    sõnum.setText("Tehing sooritatud!");
+                if (summa > 0.0) {
+                    pank.teeTehing(kasutajaKonto, konto, summa);
+                    sõnum2.setText("Tehing sooritatud!");
                 }
             } catch (PolePiisavaltRahaErind ex) {
                 // lõpmatu tsükkel

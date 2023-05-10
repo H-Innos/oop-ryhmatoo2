@@ -3,6 +3,7 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -19,13 +20,8 @@ public class Peaklass extends Application {
         // näitame mugavuse pärast kõiki kontosid konsoolis
         pank.näitaKontod();
 
-        // loome peastseeni
-        Scene peastseen = new Scene(juur, 300, 200);
-        peaLava.setScene(peastseen);
-        peaLava.setTitle("Parim pank maailmas");
-        peaLava.show();
-
         Button sisseLogimine = new Button("Logi sisse/ ava konto"); // sisse logimise nupp
+        sisseLogimine.setFont(Font.font("Comic Sans MS", 15));
         juur.getChildren().add(sisseLogimine);
 
         // Vajutades sisse logimise nupule loome uue sisse logimise akna, et kasutaja saaks sisestada oma info
@@ -43,6 +39,15 @@ public class Peaklass extends Application {
                 }
             });
         });
+        // loome peastseeni
+        Scene peastseen = new Scene(juur, 300, 200);
+        peaLava.setScene(peastseen);
+        peaLava.setTitle("Parim pank maailmas");
+        peaLava.show();
+
+        // nupu asukoht keskel olenemata fonti suurusest/opsüsteemist
+        sisseLogimine.relocate((peastseen.getWidth()/2)-(sisseLogimine.getWidth()/2),
+                            (peastseen.getHeight()/2)-(sisseLogimine.getHeight()/2));
     }
 
     @Override

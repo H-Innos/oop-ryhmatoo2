@@ -1,4 +1,5 @@
 package com.example.oopryhmatoo2;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -32,6 +33,8 @@ public class SisseLogimiseAken extends Stage {
 
         vbox = new VBox();
         vbox.getChildren().addAll(juhised, tekstiriba, kinnita, veateade);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setSpacing(5);
 
         // enter või nupuvajutus
         kinnita.setOnAction(event -> otsiKlienti());

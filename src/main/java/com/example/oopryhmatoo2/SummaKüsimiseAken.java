@@ -1,5 +1,6 @@
 package com.example.oopryhmatoo2;
 
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -25,6 +26,9 @@ public class SummaKüsimiseAken extends Stage {
         });
 
         VBox vbox = new VBox(10, juhis, tekstiriba, kinnita, veateade);
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setSpacing(5);
+
         Scene scene = new Scene(vbox, 300, 250);
         this.setScene(scene);
         this.setResizable(true);

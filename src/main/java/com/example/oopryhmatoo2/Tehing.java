@@ -33,7 +33,7 @@ public abstract class Tehing {
     public abstract void teostaMakse();
     @Override
     public String toString() {
-        return maksetüüp() + " - Tehing nr " + (tehinguNumber+1) + ": " + saatja.getKlient() +
+        return "Tehing nr " + (tehinguNumber+1) + " - " + maksetüüp() + ": " + saatja.getKlient() +
                 " saatis isikule " + saaja.getKlient() + " " + saadetudSumma + " eurot.";
     }
 }

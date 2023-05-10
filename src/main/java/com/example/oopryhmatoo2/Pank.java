@@ -179,7 +179,7 @@ public class Pank {
 
     public void lisaRaha(Pangakonto konto, double summa) {
         konto.rahaJuurde(summa);
-        System.out.println("Raha lisatud!");
+        //System.out.println("Raha lisatud!");
     }
 
     public void väljastaRaha(Pangakonto konto, double summa) {
@@ -187,6 +187,6 @@ public class Pank {
         if (summa > konto.getKontoJääk())
             throw new PolePiisavaltRahaErind("Kontol pole piisavalt raha.");
         konto.rahaVälja(summa);
-        System.out.println("Raha väljastatud!");
+        //System.out.println("Raha väljastatud!");
     }
 }
