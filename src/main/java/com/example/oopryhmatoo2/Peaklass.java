@@ -43,6 +43,7 @@ public class Peaklass extends Application {
         Scene peastseen = new Scene(juur, 300, 200);
         peaLava.setScene(peastseen);
         peaLava.setTitle("Parim pank maailmas");
+        peaLava.setResizable(false);
         peaLava.show();
 
         // nupu asukoht keskel olenemata fonti suurusest/opsüsteemist

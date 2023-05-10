@@ -156,7 +156,7 @@ public class Pank {
 
     public void näitaKontod(){
         // väljastab selle vaid alguses, enne kliendi tegevusi, et oleks kergem aru saada panga klientidest
-        System.out.println("Klientide andmed:");
+        System.out.println("Pangakontod süsteemis:");
         for (Pangakonto konto : kontod) {
             System.out.println(konto);
         }

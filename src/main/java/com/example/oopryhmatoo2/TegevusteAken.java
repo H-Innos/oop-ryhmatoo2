@@ -34,14 +34,7 @@ public class TegevusteAken extends Stage {
 
         // lisame raha
         lisaNupp.setOnAction(e -> {
-            SummaKüsimiseAken rahaLisamine = new SummaKüsimiseAken("Kui palju raha soovid lisada?");
-            rahaLisamine.setOnHidden(event -> {
-                double summa = rahaLisamine.getSisend();
-                if (summa > 0.0) {
-                    pank.lisaRaha(kasutajaKonto, summa);
-                    sõnum2.setText("Raha lisatud!");
-                }
-            });
+            rahaSisestamine(pank);
         });
 
         väljastaNupp.setOnAction(e -> {
@@ -100,8 +93,8 @@ public class TegevusteAken extends Stage {
 
         Scene scene = new Scene(hBox, 600, 300);
         this.setScene(scene);
-        this.setTitle("Vali tegevus");
-        this.setResizable(true);
+        this.setTitle("Vali tegevus - Sisse logitud: " + kasutajaKonto.getKlient().getNimi());
+        this.setResizable(false);
         this.show();
 
         // arvutab objektide asukohad õigeks
@@ -112,10 +105,20 @@ public class TegevusteAken extends Stage {
         sõnum2.setPrefWidth(scene.getWidth()-constraint.getPrefWidth());
     }
 
+    private void rahaSisestamine(Pank pank) {
+        SummaKüsimiseAken rahaLisamine = new SummaKüsimiseAken("Kui palju raha soovid lisada?");
+        rahaLisamine.setOnHidden(event -> {
+            double summa = rahaLisamine.getSisend();
+            if (summa > 0.0) {
+                pank.lisaRaha(kasutajaKonto, summa);
+                sõnum2.setText("Raha lisatud!");
+            }
+        });
+    }
+
     private void rahaVäljastamine(String teade) {
         // küsime väljastatavat summat
         SummaKüsimiseAken rahaVäljastamine = new SummaKüsimiseAken(teade);
-        // siin võiks pmst veateade ilmuda küsimise akna sees
         rahaVäljastamine.setOnHidden(event -> {
             double summa = rahaVäljastamine.getSisend();
             try {
@@ -124,6 +127,7 @@ public class TegevusteAken extends Stage {
                     sõnum2.setText("Raha välja antud!");
                 }
             } catch (PolePiisavaltRahaErind ex) {
+                // avab sama akna uuesti, veateade tekstikastis
                 rahaVäljastamine(ex.getMessage());
             }
         });
@@ -144,7 +148,7 @@ public class TegevusteAken extends Stage {
 
             // küsime summat siis, kui õige saaja on sisestatud
             if (konto != null)
-                küsiSummat(konto, "Palju raha soovid saata isikule " + konto.getKlient().getNimi() + "?");
+                küsiSummat(konto, "Kui palju raha soovid saata isikule " + konto.getKlient().getNimi() + "?");
         });
     }
 
@@ -159,7 +163,7 @@ public class TegevusteAken extends Stage {
                     sõnum2.setText("Tehing sooritatud!");
                 }
             } catch (PolePiisavaltRahaErind ex) {
-                // lõpmatu tsükkel
+                // nagu lõpmatu tsükkel
                 küsiSummat(konto, ex.getMessage());
             }
         });

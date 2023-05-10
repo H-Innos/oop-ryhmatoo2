@@ -47,7 +47,7 @@ public class SisseLogimiseAken extends Stage {
         Scene scene = new Scene(vbox, 300, 250);
         this.setScene(scene);
         this.setTitle("Logi sisse/ava konto");
-        this.setResizable(true);
+        this.setResizable(false);
         this.show();
     }
 

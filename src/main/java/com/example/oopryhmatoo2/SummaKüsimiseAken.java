@@ -1,5 +1,7 @@
 package com.example.oopryhmatoo2;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -19,6 +21,14 @@ public class SummaKüsimiseAken extends Stage {
         juhis.setText(sõnum);
         tekstiriba.requestFocus();
 
+        // intellij + http://www.java2s.com/example/java/javafx/require-the-javafx-text-field-to-contain-numeric-digits-only.html
+        // ei lase kirjutada tähti kasti
+        tekstiriba.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("[\\d\\.]*")) {
+                tekstiriba.setText(newValue.replaceAll("[^\\.\\d]", ""));
+            }
+        });
+
         kinnita.setOnAction(event -> loeSumma());
         tekstiriba.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER)
@@ -31,7 +41,7 @@ public class SummaKüsimiseAken extends Stage {
 
         Scene scene = new Scene(vbox, 300, 250);
         this.setScene(scene);
-        this.setResizable(true);
+        this.setResizable(false);
         this.show();
     }
 

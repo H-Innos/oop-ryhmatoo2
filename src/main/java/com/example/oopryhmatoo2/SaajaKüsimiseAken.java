@@ -20,13 +20,21 @@ public class SaajaKüsimiseAken extends Stage {
         juhis.setText(sõnum);
         tekstiriba.requestFocus();
 
+        // intellij + http://www.java2s.com/example/java/javafx/require-the-javafx-text-field-to-contain-numeric-digits-only.html
+        // ei lase kirjutada tähti kasti
+        tekstiriba.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.matches("[\\d\\.]*")) {
+                tekstiriba.setText(newValue.replaceAll("[^\\.\\d]", ""));
+            }
+        });
+
         // töötab nii "kinnita" nuppu, kui ka enterit vajutades
         kinnita.setOnAction(event -> {
-            loeArv();
+            loeSaaja();
         });
         tekstiriba.setOnKeyPressed( event -> {
             if (event.getCode() == KeyCode.ENTER) {
-                loeArv();
+                loeSaaja();
             }
         });
 
@@ -36,11 +44,11 @@ public class SaajaKüsimiseAken extends Stage {
 
         Scene scene = new Scene(vbox, 300, 250);
         this.setScene(scene);
-        this.setResizable(true);
+        this.setResizable(false);
         this.show();
     }
 
-    private void loeArv(){
+    private void loeSaaja(){
         String sisse = tekstiriba.getText();
         try {
             sisend = Integer.parseInt(sisse);
