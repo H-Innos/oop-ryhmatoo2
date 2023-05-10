@@ -105,6 +105,7 @@ public class TegevusteAken extends Stage {
         sõnum2.setPrefWidth(scene.getWidth()-constraint.getPrefWidth());
     }
 
+    // loob akna raha sisestamiseks
     private void rahaSisestamine(Pank pank) {
         SummaKüsimiseAken rahaLisamine = new SummaKüsimiseAken("Kui palju raha soovid lisada?");
         rahaLisamine.setOnHidden(event -> {
@@ -116,6 +117,7 @@ public class TegevusteAken extends Stage {
         });
     }
 
+    // loob akna raha väljastamiseks
     private void rahaVäljastamine(String teade) {
         // küsime väljastatavat summat
         SummaKüsimiseAken rahaVäljastamine = new SummaKüsimiseAken(teade);
@@ -133,6 +135,7 @@ public class TegevusteAken extends Stage {
         });
     }
 
+    // loob akna makse saaja küsimiseks
     private void küsiSaajat(String teade) {
         SaajaKüsimiseAken saajaKüsimine = new SaajaKüsimiseAken(teade);
         saajaKüsimine.setOnHidden(event -> {
@@ -152,6 +155,7 @@ public class TegevusteAken extends Stage {
         });
     }
 
+    // loob akna summa küsimiseks
     private void küsiSummat(Pangakonto konto, String teade) {
         SummaKüsimiseAken summaKüsimine = new SummaKüsimiseAken(teade);
 

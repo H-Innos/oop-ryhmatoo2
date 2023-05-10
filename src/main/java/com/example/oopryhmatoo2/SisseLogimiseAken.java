@@ -115,6 +115,7 @@ public class SisseLogimiseAken extends Stage {
         return pangakonto;
     }
 
+    // teisendab nime ühtsesse formaati
     private String töötleNimi(String töötlemataNimi) {
         // teisendab nime algustähed suurteks
         String[] nimeOsad  = töötlemataNimi.split("\\s+");

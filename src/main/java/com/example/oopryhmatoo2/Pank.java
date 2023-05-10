@@ -34,6 +34,7 @@ public class Pank {
         return tehingud;
     }
 
+    // loeb kontod failist listi
     public void loeKontod() throws IOException {
         // Kontode andmed
         try (DataInputStream dis = new DataInputStream(new FileInputStream("kontod.dat"))) {
@@ -74,6 +75,7 @@ public class Pank {
                     }
                 }
 
+                // võrreldes saatja ja saaja riike, loob kas siseriikliku või välismakse
                 if (saatja.getKlient().getRiik().equals(saaja.getKlient().getRiik())){
                     tehingud.add(new SiseriiklikMakse(tehinguNumber, saaja, saatja, saadetudSumma));
                 } else {
@@ -110,6 +112,7 @@ public class Pank {
         System.out.println("Pank sulges!");
     }
 
+    // loob panga kontode nimekirja uue konto ja tagastab selle
     public Pangakonto avaKonto(String nimi, String riik, double algneSumma) {
         // loome kasutaja
         Klient kasutaja = new Klient(nimi, riik);
@@ -129,6 +132,7 @@ public class Pank {
         return kasutajaKonto;
     }
 
+    // kontrollib kas numbriga konto eksisteerib
     public Pangakonto kasKontoEksisteerib(int kontoNumber) {
         for (Pangakonto konto : kontod) {
             if (konto.getKontoNumber() == kontoNumber)
@@ -137,6 +141,7 @@ public class Pank {
         throw new KontotEiEksisteeriErind("Sellise numbriga kontot ei eksisteeri.");
     }
 
+    // loob uue tehingu, salvestab selle ja teostab raha ülekande
     public void teeTehing(Pangakonto saatja, Pangakonto saaja, double summa) {
         if (saatja.getKontoJääk() < summa) {
             throw new PolePiisavaltRahaErind("Kontol pole piisavalt raha.");
@@ -166,6 +171,7 @@ public class Pank {
         System.out.println(konto.getKontoJääk());
     }
 
+    // tagastab kõigi selle kontoga tehtud tehingute info
     public String näitaTehinguid(Pangakonto konto) {
         // tagastame sõnena kõik tehingud
         String tulemus = "Kõik tehingud sinu kontoga: \n";
@@ -177,11 +183,13 @@ public class Pank {
         return tulemus;
     }
 
+    // lisab kontole rahasumma
     public void lisaRaha(Pangakonto konto, double summa) {
         konto.rahaJuurde(summa);
         //System.out.println("Raha lisatud!");
     }
 
+    // väljastab kontolt rahasumma
     public void väljastaRaha(Pangakonto konto, double summa) {
         // kui raha pole piisavalt, viskame erindi
         if (summa > konto.getKontoJääk())
